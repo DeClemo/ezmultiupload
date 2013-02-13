@@ -1,44 +1,10 @@
-{ezscript_require( 'ezjsc::yui2' )}
-{ezcss_require( 'ezmultiupload.css' )}
-<script type="text/javascript">
-(function(){ldelim}
-    YUILoader.addModule({ldelim}
-        name: 'ezmultiupload',
-        type: 'js',
-        fullpath: '{"javascript/ezmultiupload.js"|ezdesign( 'no' )}',
-        requires: ["utilities", "json", "uploader"],
-        after: ["uploader"],
-        skinnable: false
-    {rdelim});
+{ezcss_require( array( 'jquery.plupload.queue/jquery.plupload.queue.css', 
+                       'ezmultiupload.css' ) )}
 
-    // Load the files using the insert() method and set it up and init it on success.
-    YUILoader.insert({ldelim}
-        require: ["ezmultiupload"],
-        onSuccess: function()
-        {ldelim}
-            YAHOO.ez.MultiUpload.cfg = {ldelim}
-                swfURL:"{concat( ezini('eZJSCore', 'LocalScriptBasePath', 'ezjscore.ini').yui2, 'uploader/assets/uploader.swf' )|ezdesign( 'no' )}",
-                uploadURL: "{concat( 'ezmultiupload/upload/', $parent_node.node_id )|ezurl( 'no' )}",
-                uploadVars: {ldelim}
-                                '{$session_name}': '{$session_id}',
-                                //'XDEBUG_SESSION_START': 'XDEBUG_ECLIPSE',
-                                'UploadButton': 'Upload',
-                                'ezxform_token': '@$ezxFormToken@'
-                            {rdelim},
-                // Filter is passed on to uploader.setFileFilter() in ez.MultiUpload
-                fileType: [{ldelim} description:"{'Allowed Files'|i18n('extension/ezmultiupload')|wash('javascript')}", extensions:'{$file_types}' {rdelim}],
-                progressBarWidth: "300",
-                allFilesRecived:  "{'All files received.'|i18n('extension/ezmultiupload')|wash(javascript)}",
-                uploadCanceled:   "{'Upload canceled.'|i18n('extension/ezmultiupload')|wash(javascript)}",
-                thumbnailCreated: "{'Thumbnail created.'|i18n('extension/ezmultiupload')|wash(javascript)}",
-                flashError: "{'Could not load flash(or not loaded yet), this is needed for multiupload!'|i18n('extension/ezmultiupload')}"
-            {rdelim};
-            YAHOO.ez.MultiUpload.init();
-        {rdelim},
-        timeout: 10000
-    {rdelim}, "js");
-{rdelim})();
-</script>
+{ezscript_require( array( 'ezjsc::jquery', 
+                          'plupload/browserplus-min.js', 
+                          'plupload/plupload.full.js', 
+                          'plupload/jquery.plupload.queue/jquery.plupload.queue.js' ) )}
 
 <div class="border-box">
 <div class="border-tl"><div class="border-tr"><div class="border-tc"></div></div></div>
@@ -47,27 +13,104 @@
 <div class="content-view-ezmultiupload">
     <div class="class-frontpage">
     
-    <div class="attribute-header">
-        <h1 class="long">{'Multiupload'|i18n('extension/ezmultiupload')}</h1>
-    </div>
+        <div class="attribute-header">
+            <h1 class="long">{'Multiupload'|i18n('extension/ezmultiupload')}</h1>
+        </div>
+        
         <div class="attribute-description">
             <p>{'The files are uploaded to'|i18n('extension/ezmultiupload')} <a href={$parent_node.url_alias|ezurl}>{$parent_node.name|wash}</a></p>
-            <div id="uploadButtonOverlay" style="position: absolute; z-index: 2"></div>
-            <button id="uploadButton" type="button" style="z-index: 1">{'Select files'|i18n('extension/ezmultiupload')}</button>
-            <button id="cancelUploadButton" type="button">{'Cancel'|i18n('extension/ezmultiupload')}</button>
-            <p><noscript><em style="color: red;">{'Javascript has been disabled, this is needed for multiupload!'|i18n('extension/ezmultiupload')}</em></noscript></p>
         </div>
-        <div id="multiuploadProgress">
-            <p><span id="multiuploadProgressFile">&nbsp;</span>&nbsp;
-               <span id="multiuploadProgressFileName">&nbsp;</span></p>
-            <p id="multiuploadProgressMessage">&nbsp;</p>
-            <div id="multiuploadProgressBarOutline"><div id="multiuploadProgressBar"></div></div>
-        </div>
+        
+        <form action={concat('ezjscore/call/ezmultiupload::upload::', $parent_node.node_id)|ezurl()} method="post">
+            <div id="uploader">
+                <p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
+            </div>
+        </form>
+        
         <div id="thumbnails"></div>
+        
     </div>
 </div>
+
+
 
 </div></div></div>
 <div class="border-bl"><div class="border-br"><div class="border-bc"></div></div></div>
 </div>
+
+{def $maxFileSize=ezini( 'PLUploadSettings', 'maxFileSize', 'ezmultiupload.ini' )
+     $fileChunkSize=ezini( 'PLUploadSettings', 'uploadChunkSize', 'ezmultiupload.ini' )
+     $resizeSettings=ezini( 'PLUploadSettings', 'clientSideResize', 'ezmultiupload.ini' )
+     $fileTypes=ezini( concat('FileTypeSettings_', $parent_node.class_identifier), 'FileType', 'ezmultiupload.ini' )}
+
+{* Test to see if *.* is type *}
+{if $fileTypes|contains('*.*')}
+    {set $fileTypes = false()}
+{/if}
+
+<script type="text/javascript">
+// Convert divs to queue widgets when the DOM is ready
+jQuery(document).ready(function($) {ldelim}
+    $("#uploader").pluploadQueue( {ldelim}
+        // General settings
+        runtimes : 'html5,gears,flash,silverlight,browserplus,',
+        url : {concat( 'ezmultiupload/plupload/', $parent_node.node_id )|ezurl( 'single', 'full' )},
+        max_file_size : '{$maxFileSize}mb',
+        chunk_size : '{$fileChunkSize}mb',
+        file_data_name : 'Filedata',
+        unique_names : true,
+        // Resize images on clientside if we can
+        resize : {ldelim}
+            width : {$resizeSettings['width']}, 
+            height : {$resizeSettings['height']}, 
+            quality : {$resizeSettings['quality']}
+        {rdelim},
+        // Specify what files to browse for
+        {if $fileTypes}
+        filters : [
+            {ldelim} 
+                title : "Allowed files", 
+                extensions : "{foreach $fileTypes as $fileType}{$fileType}{delimiter},{/delimiter}{/foreach}"
+            {rdelim}
+        ],
+        {/if}
+        flash_swf_url : {'javascript/plupload/plupload.flash.swf'|ezdesign('single')},
+        // Silverlight settings
+        silverlight_xap_url : {'javascript/plupload/plupload.silverlight.xap'|ezdesign('single')}
+    {rdelim});
+    
+    var uploader = $('#uploader').pluploadQueue();
+    
+    uploader.bind('FileUploaded', function(uploader, file, response) {ldelim}        
+        var obj = jQuery.parseJSON(response['response']);
+        $('#thumbnails').append(obj['data']);
+    {rdelim});
+{*    
+    // Client side form validation
+    $('form#ezmultiupload-form').submit(function(e) {ldelim}
+        //var uploader = $('#uploader').pluploadQueue();
+        // Files in queue upload them first
+        if (uploader.files.length > 0) 
+        {ldelim}
+            // When all files are uploaded submit form
+            uploader.bind('StateChanged', function() {ldelim}
+                if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) 
+                {ldelim}
+                    $('form')[0].submit();
+                {rdelim}
+            {rdelim});
+            
+            uploader.start();
+        {rdelim} 
+        else 
+        {ldelim}
+            alert('You must queue at least one file.');
+        {rdelim}
+        
+        return false;
+    {rdelim});
+*}
+{rdelim});
+</script>
+
 

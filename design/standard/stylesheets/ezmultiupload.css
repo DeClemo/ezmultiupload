@@ -14,11 +14,9 @@
     margin:0;
 }
 
-
 .content-view-ezmultiupload #thumbnails p {
     margin:0;
 }
-
 
 .content-view-ezmultiupload #thumbnails .content-image,
 .content-view-ezmultiupload #thumbnails .attribute-image,
@@ -27,7 +25,9 @@
     text-align:center;
 }
 
-.content-view-ezmultiupload .thumbnail-block {
+.content-view-ezmultiupload .thumbnail-block,
+.content-view-ezmultiupload .content-view-line-thumbnail
+{
     padding: 5px 5px 0 5px;
     margin: 5px;
     border: 3px solid #eee;

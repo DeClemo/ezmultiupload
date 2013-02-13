@@ -14,5 +14,9 @@ $ViewList = array();
 $ViewList['upload'] = array( 'script' => 'upload.php',
                              'single_post_actions' => array( 'UploadButton' => 'Upload' ),
                              'params' => array( 'ParentNodeID' ) );
+                             
+$ViewList['plupload'] = array( 'script' => 'plupload.php',
+                             'single_post_actions' => array( 'UploadButton' => 'Upload' ),
+                             'params' => array( 'ParentNodeID' ) );
 
 ?>
