@@ -70,13 +70,16 @@ jQuery(document).ready(function($) {ldelim}
         filters : [
             {ldelim} 
                 title : "Allowed files", 
-                extensions : "{foreach $fileTypes as $fileType}{$fileType}{delimiter},{/delimiter}{/foreach}"
+                extensions : "{foreach $fileTypes as $fileType}{$fileType|replace( 0, 2, '' )}{delimiter},{/delimiter}{/foreach}"
             {rdelim}
         ],
         {/if}
         flash_swf_url : {'javascript/plupload/plupload.flash.swf'|ezdesign('single')},
         // Silverlight settings
-        silverlight_xap_url : {'javascript/plupload/plupload.silverlight.xap'|ezdesign('single')}
+        silverlight_xap_url : {'javascript/plupload/plupload.silverlight.xap'|ezdesign('single')},
+        multipart_params : {ldelim}
+            'ezxform_token' : '{ezmulti()}'
+        {rdelim}
     {rdelim});
     
     var uploader = $('#uploader').pluploadQueue();
@@ -85,31 +88,6 @@ jQuery(document).ready(function($) {ldelim}
         var obj = jQuery.parseJSON(response['response']);
         $('#thumbnails').append(obj['data']);
     {rdelim});
-{*    
-    // Client side form validation
-    $('form#ezmultiupload-form').submit(function(e) {ldelim}
-        //var uploader = $('#uploader').pluploadQueue();
-        // Files in queue upload them first
-        if (uploader.files.length > 0) 
-        {ldelim}
-            // When all files are uploaded submit form
-            uploader.bind('StateChanged', function() {ldelim}
-                if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) 
-                {ldelim}
-                    $('form')[0].submit();
-                {rdelim}
-            {rdelim});
-            
-            uploader.start();
-        {rdelim} 
-        else 
-        {ldelim}
-            alert('You must queue at least one file.');
-        {rdelim}
-        
-        return false;
-    {rdelim});
-*}
 {rdelim});
 </script>
 
