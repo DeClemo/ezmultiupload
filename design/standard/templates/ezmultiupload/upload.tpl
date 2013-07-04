@@ -56,7 +56,6 @@ jQuery(document).ready(function($) {ldelim}
         runtimes : 'html5,gears,flash,silverlight,browserplus,',
         url : {concat( 'ezmultiupload/plupload/', $parent_node.node_id )|ezurl( 'single', 'full' )},
         max_file_size : '{$maxFileSize}mb',
-        chunk_size : '{$fileChunkSize}mb',
         file_data_name : 'Filedata',
         unique_names : true,
         // Specify what files to browse for
