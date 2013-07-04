@@ -69,12 +69,6 @@ jQuery(document).ready(function($) {ldelim}
         chunk_size : '{$fileChunkSize}mb',
         file_data_name : 'Filedata',
         unique_names : true,
-        // Resize images on clientside if we can
-        resize : {ldelim}
-            width : {$resizeSettings['width']}, 
-            height : {$resizeSettings['height']}, 
-            quality : {$resizeSettings['quality']}
-        {rdelim},
         // Specify what files to browse for
         {if $fileTypes}
         filters : [
